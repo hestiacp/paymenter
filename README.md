@@ -1,1 +1,2 @@
-# paymenter
+# Hestia Server module for Paymenter
+
