@@ -106,6 +106,22 @@ class HestiaCP extends Server
     }
 
     /**
+     * Check if current configuration is valid
+     */
+    public function testConfig(): bool|string
+    {
+        try {
+            $this->request([
+                'cmd' => 'v-list-users',
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+
+    /**
      * Generate a random string, using a cryptographically secure 
      * pseudorandom number generator (random_int)
      * 
