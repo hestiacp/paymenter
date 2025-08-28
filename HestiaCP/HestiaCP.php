@@ -191,6 +191,21 @@ class HestiaCP extends Server
         return true;
     }
 
+    public function upgradeServer(Service $service, $settings, $properties)
+    {
+        if (!isset($properties['hestiacp_username'])) {
+            throw new \Exception("Service has not been created");
+        }
+
+        $this->request([
+            'cmd' => 'v-change-user-package',
+            'arg1' => $properties['hestiacp_username'],
+            'arg2' => $settings['package'],
+        ]);
+
+        return true;
+    }
+
     public function suspendServer(Service $service, $settings, $properties)
     {
         if (!isset($properties['hestiacp_username'])) {
