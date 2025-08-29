@@ -20,7 +20,7 @@ class HestiaCP extends Server
 
         $data['hash'] = $accesskey . ':' . $secretkey;
         $response = Http::post($host . ':' . $port . '/api/', $data);
-        if ($response->failed()) {
+        if (!$response->successful()) {
             dd($response->body(), $response->status());
             throw new \Exception('Error while requesting API');
         }
