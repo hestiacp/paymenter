@@ -11,16 +11,6 @@ use Illuminate\Support\Str;
 
 class HestiaCP extends Server
 {
-    public function getMetadata()
-    {
-        return [
-            'display_name' => 'HestiaCP',
-            'version' => '0.0.1',
-            'author' => 'HestiaCP Team',
-            'website' => 'https://hestiacp.com',
-        ];
-    }
-
     private function request($data = [])
     {
         $host = rtrim($this->config('host'), '/');
