@@ -257,6 +257,16 @@ class HestiaCP extends Server
                 'type' => 'button',
                 'url' => $this->config('host') . ':' . $this->config('port'),
                 'label' => 'Go to Control Panel',
+            ],
+            [
+                'type' => 'text',
+                'text' => $properties['hestiacp_username'],
+                'label' => 'HestiaCP Username',
+            ],
+            [
+                'type' => 'text',
+                'text' => $properties['hestiacp_password'],
+                'label' => 'HestiaCP Password',
             ]
         ];
     }
