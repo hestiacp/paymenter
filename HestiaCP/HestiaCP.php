@@ -28,7 +28,12 @@ class HestiaCP extends Server
         return $response;
     }
 
-    public function getConfig($values = [])
+    /**
+     * Get all the configuration for the extension
+     *
+     * @param  array  $values
+     */
+    public function getConfig($values = []): array
     {
         return [
             [
@@ -110,7 +115,6 @@ class HestiaCP extends Server
         }
     }
 
-
     /**
      * Generate a random string, using a cryptographically secure 
      * pseudorandom number generator (random_int)
@@ -183,7 +187,7 @@ class HestiaCP extends Server
 
     public function upgradeServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -198,7 +202,7 @@ class HestiaCP extends Server
 
     public function suspendServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -212,7 +216,7 @@ class HestiaCP extends Server
 
     public function unsuspendServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -226,7 +230,7 @@ class HestiaCP extends Server
 
     public function terminateServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -243,7 +247,7 @@ class HestiaCP extends Server
 
     public function getActions(Service $service, $settings, $properties): array
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             return [];
         }
 
