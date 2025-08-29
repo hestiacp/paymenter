@@ -144,7 +144,8 @@ class HestiaCP extends Server
 
     public function createServer(Service $service, $settings, $properties)
     {
-        $username = strtolower(Str::random());
+        $original_username = explode('@', $service->user->email)[0];
+        $username = $original_username . self::random_str(6, '0123456789');
         $password = self::random_str(16);
 
         // If first one is a number, add a letter
@@ -158,7 +159,7 @@ class HestiaCP extends Server
             'arg2' => $password,
             'arg3' => $service->user->email,
             'arg4' => $settings['package'],
-            'arg5' => explode('@', $service->user->email)[0],
+            'arg5' => $original_username,
         ]);
 
         $this->request([
