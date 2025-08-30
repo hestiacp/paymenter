@@ -11,16 +11,6 @@ use Illuminate\Support\Str;
 
 class HestiaCP extends Server
 {
-    public function getMetadata()
-    {
-        return [
-            'display_name' => 'HestiaCP',
-            'version' => '0.0.1',
-            'author' => 'HestiaCP Team',
-            'website' => 'https://hestiacp.com',
-        ];
-    }
-
     private function request($data = [])
     {
         $host = rtrim($this->config('host'), '/');
@@ -30,7 +20,7 @@ class HestiaCP extends Server
 
         $data['hash'] = $accesskey . ':' . $secretkey;
         $response = Http::post($host . ':' . $port . '/api/', $data);
-        if ($response->failed()) {
+        if (!$response->successful()) {
             dd($response->body(), $response->status());
             throw new \Exception('Error while requesting API');
         }
@@ -38,7 +28,12 @@ class HestiaCP extends Server
         return $response;
     }
 
-    public function getConfig($values = [])
+    /**
+     * Get all the configuration for the extension
+     *
+     * @param  array  $values
+     */
+    public function getConfig($values = []): array
     {
         return [
             [
@@ -106,6 +101,21 @@ class HestiaCP extends Server
     }
 
     /**
+     * Check if current configuration is valid
+     */
+    public function testConfig(): bool|string
+    {
+        try {
+            $this->request([
+                'cmd' => 'v-list-users',
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
      * Generate a random string, using a cryptographically secure 
      * pseudorandom number generator (random_int)
      * 
@@ -124,7 +134,7 @@ class HestiaCP extends Server
         $str = '';
         $max = mb_strlen($keyspace, '8bit') - 1;
         if ($max < 1) {
-            throw new Exception('$keyspace must be at least two characters long');
+            throw new \Exception('$keyspace must be at least two characters long');
         }
         for ($i = 0; $i < $length; ++$i) {
             $str .= $keyspace[random_int(0, $max)];
@@ -134,7 +144,8 @@ class HestiaCP extends Server
 
     public function createServer(Service $service, $settings, $properties)
     {
-        $username = strtolower(Str::random());
+        $original_username = explode('@', $service->user->email)[0];
+        $username = $original_username . self::random_str(6, '0123456789');
         $password = self::random_str(16);
 
         // If first one is a number, add a letter
@@ -148,7 +159,7 @@ class HestiaCP extends Server
             'arg2' => $password,
             'arg3' => $service->user->email,
             'arg4' => $settings['package'],
-            'arg5' => explode('@', $service->user->email)[0],
+            'arg5' => $original_username,
         ]);
 
         $this->request([
@@ -175,9 +186,24 @@ class HestiaCP extends Server
         return true;
     }
 
+    public function upgradeServer(Service $service, $settings, $properties)
+    {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
+            throw new \Exception("Service has not been created");
+        }
+
+        $this->request([
+            'cmd' => 'v-change-user-package',
+            'arg1' => $properties['hestiacp_username'],
+            'arg2' => $settings['package'],
+        ]);
+
+        return true;
+    }
+
     public function suspendServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -191,7 +217,7 @@ class HestiaCP extends Server
 
     public function unsuspendServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -205,7 +231,7 @@ class HestiaCP extends Server
 
     public function terminateServer(Service $service, $settings, $properties)
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             throw new \Exception("Service has not been created");
         }
 
@@ -222,7 +248,7 @@ class HestiaCP extends Server
 
     public function getActions(Service $service, $settings, $properties): array
     {
-        if (!isset($properties['hestiacp_username'])) {
+        if (!isset($properties['hestiacp_username']) || !isset($properties['hestiacp_password'])) {
             return [];
         }
 
@@ -231,6 +257,16 @@ class HestiaCP extends Server
                 'type' => 'button',
                 'url' => $this->config('host') . ':' . $this->config('port'),
                 'label' => 'Go to Control Panel',
+            ],
+            [
+                'type' => 'text',
+                'text' => $properties['hestiacp_username'],
+                'label' => 'HestiaCP Username',
+            ],
+            [
+                'type' => 'text',
+                'text' => $properties['hestiacp_password'],
+                'label' => 'HestiaCP Password',
             ]
         ];
     }
